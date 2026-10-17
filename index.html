@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>深淵工坊 Abyssal Atelier</title>
+    <style>
+        :root {
+            --bg: #0a0612;
+            --bg2: #12091c;
+            --card: rgba(20, 12, 32, 0.85);
+            --text: #e8d5c4;
+            --muted: #a89888;
+            --accent: #c9a227;
+            --accent-glow: #ffd700;
+            --crimson: #8b2942;
+            --crimson-bright: #c44569;
+            --border: #3d2a4a;
+            --success: #6b9e78;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: "Georgia", "Noto Serif TC", serif;
+            background: radial-gradient(ellipse at top, #1a0f2e 0%, var(--bg) 50%, #050308 100%);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 24px;
+            overflow-x: hidden;
+        }
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: 0;
+        }
+        .container {
+            max-width: 980px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 36px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+        .title-main {
+            font-size: 2.8rem;
+            font-weight: 400;
+            letter-spacing: 0.15em;
+            background: linear-gradient(180deg, #f0e6d3 0%, var(--accent) 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 40px rgba(201, 162, 39, 0.3);
+        }
+        .title-sub {
+            font-size: 0.95rem;
+            color: var(--muted);
+            letter-spacing: 0.3em;
+            margin-top: 8px;
+            font-style: italic;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: 1.1fr 0.9fr;
+            gap: 28px;
+        }
+        @media (max-width: 780px) {
+            .grid { grid-template-columns: 1fr; }
+            .title-main { font-size: 2rem; }
+        }
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 32px;
+            position: relative;
+            backdrop-filter: blur(8px);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05);
+        }
+        .card::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--accent), transparent);
+        }
+        .ritual-label {
+            text-align: center;
+            font-size: 0.85rem;
+            letter-spacing: 0.25em;
+            color: var(--accent);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+        .progress-container {
+            position: relative;
+            width: 240px;
+            height: 240px;
+            margin: 10px auto 24px;
+        }
+        .progress-ring svg {
+            transform: rotate(-90deg);
+            width: 100%;
+            height: 100%;
+            filter: drop-shadow(0 0 12px rgba(201, 162, 39, 0.4));
+        }
+        .bg-circle { stroke: #2a1f3d; stroke-width: 8; fill: none; }
+        .progress-circle {
+            stroke: url(#goldGrad);
+            stroke-width: 8;
+            fill: none;
+            stroke-linecap: round;
+            stroke-dasharray: 691;
+            transition: stroke-dashoffset 0.4s ease;
+        }
+        .time-display {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 3.4rem;
+            font-weight: 300;
+            letter-spacing: 0.05em;
+            color: #f5efe6;
+        }
+        .controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 8px;
+        }
+        button {
+            background: transparent;
+            color: var(--text);
+            border: 1px solid var(--border);
+            padding: 11px 22px;
+            font-family: inherit;
+            letter-spacing: 0.08em;
+            cursor: pointer;
+            transition: all 0.25s;
+            font-size: 0.9rem;
+        }
+        button:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            box-shadow: 0 0 20px rgba(201, 162, 39, 0.25);
+        }
+        button.primary {
+            background: linear-gradient(135deg, #3d2a1a, #5a3d22);
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+        button.primary:hover {
+            background: linear-gradient(135deg, #5a3d22, #7a5530);
+            box-shadow: 0 0 25px rgba(201, 162, 39, 0.35);
+        }
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 24px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border);
+            font-size: 0.85rem;
+            letter-spacing: 0.05em;
+        }
+        .stat-item { text-align: center; }
+        .stat-item strong {
+            display: block;
+            font-size: 1.6rem;
+            color: var(--accent);
+            font-weight: 400;
+            margin-bottom: 4px;
+        }
+        .task-header {
+            font-size: 1.1rem;
+            letter-spacing: 0.2em;
+            color: var(--accent);
+            margin-bottom: 18px;
+            text-align: center;
+        }
+        .task-input {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 18px;
+        }
+        .task-input input {
+            flex: 1;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 12px 14px;
+            font-family: inherit;
+            font-size: 0.95rem;
+        }
+        .task-input input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+        .task-list {
+            list-style: none;
+            max-height: 340px;
+            overflow-y: auto;
+        }
+        .task-list::-webkit-scrollbar { width: 4px; }
+        .task-list::-webkit-scrollbar-thumb { background: var(--border); }
+        .task-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 4px;
+            border-bottom: 1px solid rgba(61, 42, 74, 0.5);
+            transition: opacity 0.2s;
+        }
+        .task-item.completed {
+            opacity: 0.45;
+        }
+        .task-item.completed span {
+            text-decoration: line-through;
+            text-decoration-color: var(--crimson-bright);
+        }
+        .task-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--crimson-bright);
+            cursor: pointer;
+        }
+        .task-item span { flex: 1; font-size: 0.95rem; }
+        .delete-btn {
+            background: none;
+            border: none;
+            color: var(--muted);
+            cursor: pointer;
+            font-size: 1rem;
+            padding: 4px 8px;
+            letter-spacing: 0;
+        }
+        .delete-btn:hover { color: var(--crimson-bright); }
+        .whisper {
+            margin-top: 22px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border);
+            font-style: italic;
+            color: var(--muted);
+            text-align: center;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+        footer {
+            text-align: center;
+            margin-top: 48px;
+            font-size: 0.8rem;
+            color: var(--muted);
+            letter-spacing: 0.15em;
+        }
+        .mode-indicator {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            margin-bottom: 8px;
+            font-size: 0.75rem;
+            letter-spacing: 0.1em;
+        }
+        .mode-dot {
+            opacity: 0.4;
+            transition: opacity 0.3s;
+        }
+        .mode-dot.active {
+            opacity: 1;
+            color: var(--accent);
+        }
+    </style>
+</head>
+<body>
+    <svg width="0" height="0">
+        <defs>
+            <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#f0e6d3"/>
+                <stop offset="50%" stop-color="#c9a227"/>
+                <stop offset="100%" stop-color="#8b6914"/>
+            </linearGradient>
+        </defs>
+    </svg>
+
+    <div class="container">
+        <header>
+            <div class="title-main">深淵工坊</div>
+            <div class="title-sub">ABYSSAL ATELIER · 專注儀式</div>
+        </header>
+
+        <div class="grid">
+            <div class="card">
+                <div class="ritual-label" id="modeLabel">專注儀式</div>
+                <div class="mode-indicator">
+                    <span class="mode-dot active" data-mode="focus">鍛造</span>
+                    <span class="mode-dot" data-mode="short">沉澱</span>
+                    <span class="mode-dot" data-mode="long">深潛</span>
+                </div>
+                <div class="progress-container">
+                    <svg viewBox="0 0 240 240" class="progress-ring">
+                        <circle class="bg-circle" cx="120" cy="120" r="110"/>
+                        <circle class="progress-circle" id="progressCircle" cx="120" cy="120" r="110"/>
+                    </svg>
+                    <div class="time-display" id="timeDisplay">25:00</div>
+                </div>
+                <div class="controls">
+                    <button class="primary" id="startBtn">啟動儀式</button>
+                    <button id="pauseBtn">暫停</button>
+                    <button id="resetBtn">重鑄</button>
+                    <button id="modeBtn">轉換</button>
+                </div>
+                <div class="stats">
+                    <div class="stat-item">
+                        <strong id="sessionCount">0</strong>
+                        完成儀式
+                    </div>
+                    <div class="stat-item">
+                        <strong id="streakCount">0</strong>
+                        連續日數
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="task-header">今日試煉</div>
+                <div class="task-input">
+                    <input type="text" id="taskInput" placeholder="銘刻一項試煉...">
+                    <button id="addTaskBtn">銘刻</button>
+                </div>
+                <ul class="task-list" id="taskList"></ul>
+                <div class="whisper" id="whisper"></div>
+            </div>
+        </div>
+
+        <footer>
+            深淵工坊 · 所有紀錄僅存於本地 · 儀式結束後自動消散
+        </footer>
+    </div>
+
+    <script>
+        const MODES = {
+            focus: { label: "專注儀式", minutes: 25, key: "focus" },
+            short: { label: "沉澱時刻", minutes: 5, key: "short" },
+            long: { label: "深潛休息", minutes: 15, key: "long" }
+        };
+        let currentMode = "focus";
+        let timeLeft = 25 * 60;
+        let totalTime = timeLeft;
+        let timer = null;
+        let isRunning = false;
+        let sessions = parseInt(localStorage.getItem("aa_sessions") || "0");
+        let streak = parseInt(localStorage.getItem("aa_streak") || "0");
+        let lastDate = localStorage.getItem("aa_lastDate") || "";
+
+        const whispers = [
+            "深淵不急，它只是等待你願意沉下去的那一刻。",
+            "每一次專注，都是在黑暗中點燃一盞微弱的燈。",
+            "試煉完成後，並非結束，而是更深一層的開始。",
+            "時間在這裡不以分鐘計算，而以意志的密度衡量。",
+            "把雜念留給水面，把自己沉入底部。",
+            "工坊裡沒有觀眾，只有你與尚未成形的東西。",
+            "連續的日子會在不知不覺中，把你鍛造成另一種形狀。",
+            "休息不是逃離，而是讓熔爐重新蓄熱。"
+        ];
+
+        const timeDisplay = document.getElementById("timeDisplay");
+        const progressCircle = document.getElementById("progressCircle");
+        const modeLabel = document.getElementById("modeLabel");
+        const startBtn = document.getElementById("startBtn");
+        const pauseBtn = document.getElementById("pauseBtn");
+        const resetBtn = document.getElementById("resetBtn");
+        const modeBtn = document.getElementById("modeBtn");
+        const sessionCountEl = document.getElementById("sessionCount");
+        const streakCountEl = document.getElementById("streakCount");
+        const taskInput = document.getElementById("taskInput");
+        const addTaskBtn = document.getElementById("addTaskBtn");
+        const taskList = document.getElementById("taskList");
+        const whisperEl = document.getElementById("whisper");
+        const modeDots = document.querySelectorAll(".mode-dot");
+
+        const radius = 110;
+        const circumference = 2 * Math.PI * radius;
+
+        function init() {
+            updateDisplay();
+            loadTasks();
+            updateStats();
+            checkStreak();
+            showWhisper();
+            progressCircle.style.strokeDasharray = circumference;
+            updateProgress();
+            updateModeDots();
+        }
+
+        function updateDisplay() {
+            const m = Math.floor(timeLeft / 60).toString().padStart(2, "0");
+            const s = (timeLeft % 60).toString().padStart(2, "0");
+            timeDisplay.textContent = `${m}:${s}`;
+        }
+
+        function updateProgress() {
+            const progress = (totalTime - timeLeft) / totalTime;
+            const offset = circumference * (1 - progress);
+            progressCircle.style.strokeDashoffset = offset;
+        }
+
+        function updateModeDots() {
+            modeDots.forEach(dot => {
+                dot.classList.toggle("active", dot.dataset.mode === currentMode);
+            });
+        }
+
+        function startTimer() {
+            if (isRunning) return;
+            isRunning = true;
+            startBtn.textContent = "儀式進行中";
+            timer = setInterval(() => {
+                timeLeft--;
+                updateDisplay();
+                updateProgress();
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    isRunning = false;
+                    onComplete();
+                }
+            }, 1000);
+        }
+
+        function pauseTimer() {
+            clearInterval(timer);
+            isRunning = false;
+            startBtn.textContent = "繼續儀式";
+        }
+
+        function resetTimer() {
+            clearInterval(timer);
+            isRunning = false;
+            timeLeft = MODES[currentMode].minutes * 60;
+            totalTime = timeLeft;
+            updateDisplay();
+            updateProgress();
+            startBtn.textContent = "啟動儀式";
+        }
+
+        function switchMode() {
+            const keys = Object.keys(MODES);
+            const idx = keys.indexOf(currentMode);
+            currentMode = keys[(idx + 1) % keys.length];
+            modeLabel.textContent = MODES[currentMode].label;
+            updateModeDots();
+            resetTimer();
+        }
+
+        function onComplete() {
+            playTone();
+            if (currentMode === "focus") {
+                sessions++;
+                localStorage.setItem("aa_sessions", sessions);
+                updateStats();
+                alert("儀式完成。深淵記住了這一刻。");
+                currentMode = "short";
+            } else {
+                alert("沉澱結束。準備再次沉入。");
+                currentMode = "focus";
+            }
+            modeLabel.textContent = MODES[currentMode].label;
+            updateModeDots();
+            timeLeft = MODES[currentMode].minutes * 60;
+            totalTime = timeLeft;
+            updateDisplay();
+            updateProgress();
+            startBtn.textContent = "啟動儀式";
+            showWhisper();
+        }
+
+        function playTone() {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = "sine";
+                osc.frequency.setValueAtTime(220, ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(110, ctx.currentTime + 1.2);
+                gain.gain.setValueAtTime(0.15, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 1.5);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start();
+                osc.stop(ctx.currentTime + 1.5);
+            } catch (e) {}
+        }
+
+        function loadTasks() {
+            const tasks = JSON.parse(localStorage.getItem("aa_tasks") || "[]");
+            taskList.innerHTML = "";
+            tasks.forEach((task, index) => {
+                const li = document.createElement("li");
+                li.className = "task-item" + (task.done ? " completed" : "");
+                li.innerHTML = `
+                    <input type="checkbox" ${task.done ? "checked" : ""} data-index="${index}">
+                    <span>${escapeHtml(task.text)}</span>
+                    <button class="delete-btn" data-index="${index}">×</button>
+                `;
+                taskList.appendChild(li);
+            });
+            taskList.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+                cb.addEventListener("change", e => toggleTask(parseInt(e.target.dataset.index)));
+            });
+            taskList.querySelectorAll(".delete-btn").forEach(btn => {
+                btn.addEventListener("click", e => deleteTask(parseInt(e.target.dataset.index)));
+            });
+        }
+
+        function addTask() {
+            const text = taskInput.value.trim();
+            if (!text) return;
+            const tasks = JSON.parse(localStorage.getItem("aa_tasks") || "[]");
+            tasks.push({ text, done: false });
+            localStorage.setItem("aa_tasks", JSON.stringify(tasks));
+            taskInput.value = "";
+            loadTasks();
+        }
+
+        function toggleTask(index) {
+            const tasks = JSON.parse(localStorage.getItem("aa_tasks") || "[]");
+            tasks[index].done = !tasks[index].done;
+            localStorage.setItem("aa_tasks", JSON.stringify(tasks));
+            loadTasks();
+        }
+
+        function deleteTask(index) {
+            const tasks = JSON.parse(localStorage.getItem("aa_tasks") || "[]");
+            tasks.splice(index, 1);
+            localStorage.setItem("aa_tasks", JSON.stringify(tasks));
+            loadTasks();
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement("div");
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function updateStats() {
+            sessionCountEl.textContent = sessions;
+            streakCountEl.textContent = streak;
+        }
+
+        function checkStreak() {
+            const today = new Date().toDateString();
+            if (lastDate !== today) {
+                const yesterday = new Date();
+                yesterday.setDate(yesterday.getDate() - 1);
+                if (lastDate === yesterday.toDateString()) streak++;
+                else if (lastDate) streak = 1;
+                else streak = Math.max(streak, 1);
+                lastDate = today;
+                localStorage.setItem("aa_streak", streak);
+                localStorage.setItem("aa_lastDate", lastDate);
+                updateStats();
+            }
+        }
+
+        function showWhisper() {
+            whisperEl.textContent = whispers[Math.floor(Math.random() * whispers.length)];
+        }
+
+        startBtn.addEventListener("click", startTimer);
+        pauseBtn.addEventListener("click", pauseTimer);
+        resetBtn.addEventListener("click", resetTimer);
+        modeBtn.addEventListener("click", switchMode);
+        addTaskBtn.addEventListener("click", addTask);
+        taskInput.addEventListener("keypress", e => { if (e.key === "Enter") addTask(); });
+
+        init();
+    </script>
+</body>
+</html>
